@@ -47,5 +47,7 @@ export const handler: Schema["generateHaiku"]["functionHandler"] = async (
   // Parse the response and return the generated haiku
   const data = JSON.parse(Buffer.from(response.body).toString());
 
+  console.log(data.content[0].text);
+
   return data.content[0].text;
 };

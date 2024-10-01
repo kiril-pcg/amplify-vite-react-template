@@ -3,10 +3,6 @@ import { FormEvent, useState } from "react";
 import { generateClient } from "aws-amplify/api";
 import { Schema } from "../../../amplify/data/resource";
 
-import { Amplify } from "aws-amplify";
-import outputs from "../../../amplify_outputs.json";
-
-Amplify.configure(outputs);
 const client = generateClient<Schema>();
 
 export default function Home() {
@@ -42,6 +38,13 @@ export default function Home() {
             onChange={(e) => setPrompt(e.target.value)}
           />
         </form>
+
+        <button 
+            type="submit" 
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+          >
+            Generate Haiku
+          </button>
 
         <div className="text-center">
           <pre>{answer}</pre>
