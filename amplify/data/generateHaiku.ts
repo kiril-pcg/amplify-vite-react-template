@@ -2,7 +2,6 @@ import type { Schema } from "./resource";
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,
-  InvokeModelCommandInput,
 } from "@aws-sdk/client-bedrock-runtime";
 
 // initialize bedrock runtime client
@@ -12,42 +11,32 @@ export const handler: Schema["generateHaiku"]["functionHandler"] = async (
   event,
   context
 ) => {
-  // User prompt
   const prompt = event.arguments.prompt;
+  const modelId = process.env.MODEL_ID;
 
-  // Invoke model
-  const input = {
-    modelId: process.env.MODEL_ID,
+  const payload = {
+    inputText: prompt,
+    textGenerationConfig: {
+      maxTokenCount: 4096,
+      stopSequences: [],
+      temperature: 0,
+      topP: 1,
+    },
+  };
+
+
+  const command = new InvokeModelCommand({
     contentType: "application/json",
-    accept: "application/json",
-    body: JSON.stringify({
-      anthropic_version: "bedrock-2023-05-31",
-      system:
-        "You are a an expert at crafting a haiku. You are able to craft a haiku out of anything and therefore answer only in haiku.",
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: prompt,
-            },
-          ],
-        },
-      ],
-      max_tokens: 1000,
-      temperature: 0.5,
-    }),
-  } as InvokeModelCommandInput;
-
-  const command = new InvokeModelCommand(input);
+    body: JSON.stringify(payload),
+    modelId,
+  });
 
   const response = await client.send(command);
 
-  // Parse the response and return the generated haiku
-  const data = JSON.parse(Buffer.from(response.body).toString());
+  const decodedResponseBody = new TextDecoder().decode(response.body);
+  const responseBody = JSON.parse(decodedResponseBody);
 
-  console.log(data.content[0].text);
+  console.log(responseBody.results[0].outputText); 
 
-  return data.content[0].text;
+  return responseBody.results[0].outputText;
 };
