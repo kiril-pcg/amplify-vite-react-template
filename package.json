@@ -12,6 +12,8 @@
   "dependencies": {
     "@aws-amplify/ui-react": "^6.2.0",
     "@aws-sdk/client-bedrock-runtime": "^3.658.1",
+    "@radix-ui/react-menubar": "^1.1.2",
+    "@radix-ui/react-navigation-menu": "^1.2.1",
     "@radix-ui/react-slot": "^1.1.0",
     "aws-amplify": "^6.5.2",
     "class-variance-authority": "^0.7.0",

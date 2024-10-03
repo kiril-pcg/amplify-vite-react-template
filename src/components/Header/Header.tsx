@@ -1,15 +1,34 @@
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
+import { Button } from "../ui/button";
+import { buttonVariants } from "../ui/button";
+import { Menubar } from "@/components/ui/menubar";
+import "./Header.css"; // Import your custom CSS
 
 interface HeaderProps {
-    signOut: any
+  signOut: any;
 }
 
-export default function Header({signOut}: HeaderProps) {
+export default function Header({ signOut }: HeaderProps) {
   return (
     <div>
-      <Link to={"/"}>Home</Link>
-      <Link to={"/industries"}>Industries</Link>
-      <button onClick={signOut}>Sign out</button>
+      <Menubar className="menubar">
+        <div className="left-side">
+          <Link className={buttonVariants({ variant: "ghost" })} to={"/"}>
+            Home
+          </Link>
+          <Link
+            className={buttonVariants({ variant: "ghost" })}
+            to={"/industries"}
+          >
+            Industries
+          </Link>
+        </div>
+        <div className="right-side">
+          <Button variant="ghost" onClick={signOut}>
+            Sign out
+          </Button>
+        </div>
+      </Menubar>
     </div>
-  )
+  );
 }

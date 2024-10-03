@@ -17,6 +17,7 @@ export const generateHaikuFunction = defineFunction({
 const schema = a.schema({
   Industries: a
     .model({
+      industryName: a.string(),
       prompt: a.string(),
     })
     .authorization((allow) => [allow.publicApiKey()]),
