@@ -11,7 +11,7 @@ interface HeaderProps {
 export default function Header({ signOut }: HeaderProps) {
   return (
     <div>
-      <Menubar className="menubar">
+      <Menubar className="menubar px-4">
         <div className="left-side">
           <Link className={buttonVariants({ variant: "ghost" })} to={"/"}>
             Home
