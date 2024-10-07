@@ -15,10 +15,6 @@ export default function Industries() {
     });
   }, []);
 
-  function deleteIndustrie(id: string) {
-    client.models.Industries.delete({ id });
-  }
-
   return (
     <div>
       <DataTable columns={columns} data={industries} />

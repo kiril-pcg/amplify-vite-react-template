@@ -1,5 +1,3 @@
-'use client'
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -15,9 +13,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, XCircle } from "lucide-react"
+import { Industrie } from "./columns"
 
 const formSchema = z.object({
   industry: z.string().min(2, {
@@ -28,17 +27,32 @@ const formSchema = z.object({
   }),
 })
 
-export default function IndustryForm() {
+interface IndustryFormProps {
+  initialData?: Industrie | null
+  mode?: "create" | "update"
+  onSuccess?: () => void
+}
+
+export default function IndustryForm({ initialData, mode = "create", onSuccess }: IndustryFormProps) {
   const [showAlert, setShowAlert] = useState(false)
   const [alertType, setAlertType] = useState<"success" | "error">("success") 
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      industry: "",
-      prompt: "",
+      industry: initialData?.industryName || "",
+      prompt: initialData?.prompt || "",
     },
   })
+
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        industry: initialData.industryName || "",
+        prompt: initialData.prompt || "",
+      })
+    }
+  }, [initialData, form])
 
   async function addIndustry(industryName: string, prompt: string) {
     try {
@@ -53,12 +67,37 @@ export default function IndustryForm() {
     }
   }
 
+  async function updateIndustry(id: string, industryName: string, prompt: string) {
+    try {
+      await client.models.Industries.update({
+        id: id, 
+        prompt: prompt,
+        industryName: industryName,
+      })
+      return true
+    } catch (error) {
+      console.error("Error updating industry:", error)
+      return false
+    }
+  }
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const success = await addIndustry(values.industry, values.prompt)
+    let success
+    if (mode === "create") {
+      success = await addIndustry(values.industry, values.prompt)
+    } else {
+      success = await updateIndustry(initialData!.id, values.industry, values.prompt)
+    }
+
     if (success) {
       setAlertType("success")
       setShowAlert(true)
-      form.reset()
+      if (mode === "create") {
+        form.reset()
+      }
+      if (onSuccess) {
+        onSuccess()
+      }
       setTimeout(() => setShowAlert(false), 5000) 
     } else {
       setAlertType("error")
@@ -78,8 +117,8 @@ export default function IndustryForm() {
           )}
           <AlertDescription className={alertType === "success" ? "text-green-700" : "text-red-700"}>
             {alertType === "success"
-              ? "Industry successfully added!"
-              : "Error: Failed to add industry."}
+              ? `Industry successfully ${mode === "create" ? "added" : "updated"}!`
+              : `Error: Failed to ${mode === "create" ? "add" : "update"} industry.`}
           </AlertDescription>
         </Alert>
       )}
@@ -119,7 +158,7 @@ export default function IndustryForm() {
             )}
           />
           <Button type="submit" className="w-full">
-            Submit
+            {mode === "create" ? "Submit" : "Update"}
           </Button>
         </form>
       </Form>
