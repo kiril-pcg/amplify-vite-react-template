@@ -1,9 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast"
@@ -57,6 +57,7 @@ interface ProfileFormProps {
 
 export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
   const { toast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -91,36 +92,48 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
   }
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
+    setIsSubmitting(true);
     console.log("data: ", data);
   
-    const response = await client.queries.generateHaiku({ prompt: data.prompt });
-  
-    if (response.errors && response.errors.length > 0) {
-      console.error("GraphQL Error:", response.errors);
-      toast({
-        variant: "destructive",
-        title: "Error!",
-        description: "Your response was not generated, there was an error in the lambda.",
-      })
-    } else if (response.data) {
-      console.log(response.data);
-      const success = await addResponse(response.data);
-      if (success) {
-        onResponseAdded();
-        toast({
-          variant: "success",
-          title: "Success! Your response has been saved!",
-          description: "Your message has been sent.",
-        })
-      } else {
+    try {
+      const response = await client.queries.generateHaiku({ prompt: data.prompt });
+    
+      if (response.errors && response.errors.length > 0) {
+        console.error("GraphQL Error:", response.errors);
         toast({
           variant: "destructive",
           title: "Error!",
-          description: "Failed to save the response.",
+          description: "Your response was not generated, there was an error in the lambda.",
         })
+      } else if (response.data) {
+        console.log(response.data);
+        const success = await addResponse(response.data);
+        if (success) {
+          onResponseAdded();
+          toast({
+            variant: "success",
+            title: "Success! Your response has been saved!",
+            description: "Your message has been sent.",
+          })
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Error!",
+            description: "Failed to save the response.",
+          })
+        }
+      } else {
+        console.warn("Unexpected response:", response);
       }
-    } else {
-      console.warn("Unexpected response:", response);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        variant: "destructive",
+        title: "Error!",
+        description: "An unexpected error occurred. Please try again.",
+      })
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -224,8 +237,19 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
           )}
         />
         <div className="flex justify-center">
-          <Button type="submit" className="w-full">
-            Submit
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Submit"
+            )}
           </Button>
         </div>
       </form>
