@@ -10,11 +10,17 @@ export const handler: Schema["generateHaiku"]["functionHandler"] = async (
   event,
   context
 ) => {
-  const prompt = event.arguments.prompt;
+  const { prompt, name, jobTitle, companyName } = event.arguments;
   const modelId = process.env.MODEL_ID;
 
+  // Modify the prompt to include additional details
+  const enhancedPrompt = `${prompt}\n\nHere is some additional information about the person you are contacting:
+  - Name: ${name}
+  - Job Title: ${jobTitle}
+  - Company Name: ${companyName}`;
+
   const payload = {
-    inputText: prompt,
+    inputText: enhancedPrompt,
     textGenerationConfig: {
       maxTokenCount: 4096,
       stopSequences: [],
@@ -22,7 +28,6 @@ export const handler: Schema["generateHaiku"]["functionHandler"] = async (
       topP: 1,
     },
   };
-
 
   const command = new InvokeModelCommand({
     contentType: "application/json",

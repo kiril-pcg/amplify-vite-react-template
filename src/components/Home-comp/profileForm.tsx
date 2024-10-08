@@ -3,6 +3,7 @@ import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,22 +33,16 @@ import { client } from "../../utils/utils";
 import { Schema } from "../../../amplify/data/resource";
 
 const formSchema = z.object({
-  bio: z
-    .string()
-    .min(10, {
-      message: "Bio must be at least 10 characters.",
-    })
-    .max(500, {
-      message: "Bio must not be longer than 500 characters.",
-    }),
-  industry: z.string({
-    required_error: "Please select an industry.",
+  name: z.string().optional(),
+  jobTitle: z.string().optional(),
+  companyName: z.string().optional(),
+  // bio: z.string().max(500, {
+  //   message: "Bio must not be longer than 500 characters.",
+  // }).optional(),
+  industry: z.string().optional(),
+  prompt: z.string().min(10, {
+    message: "Prompt must be at least 10 characters.",
   }),
-  prompt: z
-    .string()
-    .min(10, {
-      message: "Prompt must be at least 10 characters.",
-    }),
 });
 
 interface ProfileFormProps {
@@ -62,8 +57,10 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      bio: "",
-      industry: "",
+      name: "",
+      jobTitle: "",
+      companyName: "",
+      // bio: "",
       prompt: "",
     },
   });
@@ -96,7 +93,12 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
     console.log("data: ", data);
   
     try {
-      const response = await client.queries.generateHaiku({ prompt: data.prompt });
+      const response = await client.queries.generateHaiku({ 
+        name: data.name, 
+        jobTitle: data.jobTitle, 
+        companyName: data.companyName, 
+        prompt: data.prompt 
+    });
     
       if (response.errors && response.errors.length > 0) {
         console.error("GraphQL Error:", response.errors);
@@ -142,10 +144,52 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Your name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="jobTitle"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Job Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Your job title" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="companyName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Company Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Your company name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* <FormField
+          control={form.control}
           name="bio"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Bio</FormLabel>
+              <FormLabel>LinkedIn Bio</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Tell us about yourself"
@@ -156,7 +200,7 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
               <FormMessage />
             </FormItem>
           )}
-        />
+        /> */}
 
         <FormField
           control={form.control}
@@ -228,7 +272,7 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
               <FormControl>
                 <Textarea
                   placeholder="Industry-specific prompt"
-                  className="min-h-[350px] max-h-[30w]"
+                  className="min-h-[250px] max-h-[30w]"
                   {...field}
                 />
               </FormControl>

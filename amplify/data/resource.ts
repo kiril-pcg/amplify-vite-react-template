@@ -28,9 +28,14 @@ const schema = a.schema({
       response: a.string(),
     })
     .authorization((allow) => [allow.publicApiKey()]),
-  generateHaiku: a
+    generateHaiku: a
     .query()
-    .arguments({ prompt: a.string().required() })
+    .arguments({ 
+        name: a.string(), 
+        jobTitle: a.string(), 
+        companyName: a.string(), 
+        prompt: a.string().required() 
+    })
     .returns(a.string())
     .authorization((allow) => [allow.publicApiKey()])
     .handler(a.handler.function(generateHaikuFunction)),
