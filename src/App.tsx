@@ -9,20 +9,18 @@ import "./App.css";
 
 function App() {
   return (
-    <div className="bg-gray-100">
-      <Authenticator hideSignUp>
-        {({ signOut }) => (
-          <Router>
-            <Header signOut={signOut} />
-            <Toaster />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/industries" element={<Industries />} />
-            </Routes>
-          </Router>
-        )}
-      </Authenticator>
-      </div>
+    <Authenticator className="flex items-center justify-center min-h-screen" hideSignUp>
+      {({ signOut }) => (
+        <Router>
+          <Header signOut={signOut} />
+          <Toaster />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/industries" element={<Industries />} />
+          </Routes>
+        </Router>
+      )}
+    </Authenticator>
   );
 }
 

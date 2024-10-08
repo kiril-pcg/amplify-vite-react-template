@@ -35,6 +35,7 @@ import { MoreHorizontal } from "lucide-react"
 import { Industrie } from "./columns"
 import { useState } from "react"
 import { client } from "../../utils/utils"
+import { useToast } from "../../hooks/use-toast"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -47,10 +48,18 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [selectedIndustry, setSelectedIndustry] = useState<Industrie | null>(null)
+
+  const { toast } = useToast();
 
   function deleteIndustrie(id: string) {
     client.models.Industries.delete({ id });
+
+    toast({
+      title: `Industry successfully deleted!`,
+      variant: "success",
+    })
   }
 
   const allColumns: ColumnDef<TData, TValue>[] = [
@@ -99,15 +108,15 @@ export function DataTable<TData, TValue>({
   return (
     <div className="px-4">
       <div className="flex justify-end w-full mb-2 mt-2">
-        <Dialog>
-          <DialogTrigger>
+        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+          <DialogTrigger asChild>
             <Button variant="destructive">Add new</Button>
           </DialogTrigger>
           <DialogContent className="max-w-3xl">
             <DialogHeader>
               <DialogTitle>Add new Industry</DialogTitle>
             </DialogHeader>
-            <IndustryForm />
+            <IndustryForm onSuccess={() => setAddDialogOpen(false)} />
           </DialogContent>
         </Dialog>
       </div>

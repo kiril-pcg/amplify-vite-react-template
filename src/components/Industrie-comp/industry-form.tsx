@@ -13,10 +13,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { useState, useEffect } from "react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle, XCircle } from "lucide-react"
+import { useEffect } from "react"
 import { Industrie } from "./columns"
+import { useToast } from "../../hooks/use-toast"
 
 const formSchema = z.object({
   industry: z.string().min(2, {
@@ -34,8 +33,7 @@ interface IndustryFormProps {
 }
 
 export default function IndustryForm({ initialData, mode = "create", onSuccess }: IndustryFormProps) {
-  const [showAlert, setShowAlert] = useState(false)
-  const [alertType, setAlertType] = useState<"success" | "error">("success") 
+  const { toast } = useToast()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -90,78 +88,66 @@ export default function IndustryForm({ initialData, mode = "create", onSuccess }
     }
 
     if (success) {
-      setAlertType("success")
-      setShowAlert(true)
+      toast({
+        title: `Industry ${mode === "create" ? "added" : "updated"} successfully`,
+        description: `The industry "${values.industry}" has been ${mode === "create" ? "added" : "updated"}.`,
+        variant: "success",
+      })
       if (mode === "create") {
         form.reset()
       }
       if (onSuccess) {
         onSuccess()
       }
-      setTimeout(() => setShowAlert(false), 5000) 
     } else {
-      setAlertType("error")
-      setShowAlert(true)
-      setTimeout(() => setShowAlert(false), 5000)
+      toast({
+        title: `Failed to ${mode === "create" ? "add" : "update"} industry`,
+        description: "An error occurred. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 
   return (
-    <div>
-      {showAlert && (
-        <Alert className={alertType === "success" ? "bg-green-100 border-green-500" : "bg-red-100 border-red-500"}>
-          {alertType === "success" ? (
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          ) : (
-            <XCircle className="h-4 w-4 text-red-600" />
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-8"
+      >
+        <FormField
+          control={form.control}
+          name="industry"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Industry Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter the industry name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-          <AlertDescription className={alertType === "success" ? "text-green-700" : "text-red-700"}>
-            {alertType === "success"
-              ? `Industry successfully ${mode === "create" ? "added" : "updated"}!`
-              : `Error: Failed to ${mode === "create" ? "add" : "update"} industry.`}
-          </AlertDescription>
-        </Alert>
-      )}
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8"
-        >
-          <FormField
-            control={form.control}
-            name="industry"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Industry Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter the industry name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="prompt"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Prompt</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Enter your prompt here"
-                    className="min-h-[350px] max-h-[28vw]"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full">
-            {mode === "create" ? "Submit" : "Update"}
-          </Button>
-        </form>
-      </Form>
-    </div>
+        />
+        <FormField
+          control={form.control}
+          name="prompt"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Prompt</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Enter your prompt here"
+                  className="min-h-[350px] max-h-[28vw]"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" className="w-full">
+          {mode === "create" ? "Submit" : "Update"}
+        </Button>
+      </form>
+    </Form>
   )
 }
