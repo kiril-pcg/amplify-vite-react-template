@@ -25,12 +25,8 @@ const schema = a.schema({
     .authorization((allow) => [allow.publicApiKey()]),
   Responses: a
     .model({
-      id: a.id().required(),
-      responseId: a.id(),
       response: a.string(),
-      cratedAt: a.datetime(),
     })
-    .secondaryIndexes((index) => [index("responseId").sortKeys(['cratedAt']),])
     .authorization((allow) => [allow.publicApiKey()]),
     generateHaiku: a
     .query()
