@@ -26,7 +26,7 @@ const schema = a.schema({
   Responses: a
     .model({
       id: a.id().required(),
-      responseId: a.id().required(),
+      responseId: a.id(),
       response: a.string(),
       cratedAt: a.datetime(),
     })
