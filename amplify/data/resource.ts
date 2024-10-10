@@ -5,7 +5,7 @@ import {
   defineFunction,
 } from "@aws-amplify/backend";
 
-export const MODEL_ID = "amazon.titan-text-express-v1";
+export const MODEL_ID = "anthropic.claude-3-sonnet-20240229-v1:0";
 
 export const generateHaikuFunction = defineFunction({
   entry: "./generateHaiku.ts",
