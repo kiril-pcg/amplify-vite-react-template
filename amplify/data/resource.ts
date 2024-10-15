@@ -33,7 +33,8 @@ const schema = a.schema({
     .arguments({ 
         name: a.string(), 
         jobTitle: a.string(), 
-        companyName: a.string(), 
+        companyName: a.string(),
+        about: a.string(),
         prompt: a.string().required() 
     })
     .returns(a.string())

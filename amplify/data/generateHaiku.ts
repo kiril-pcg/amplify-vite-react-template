@@ -7,14 +7,17 @@ import {
 const client = new BedrockRuntimeClient({ region: "eu-central-1" });
 
 export const handler: Schema["generateHaiku"]["functionHandler"] = async (event, context) => {
-  const { prompt, name, jobTitle, companyName } = event.arguments;
+  const { prompt, name, jobTitle, companyName, about } = event.arguments;
   const modelId = process.env.MODEL_ID || "anthropic.claude-3-sonnet-20240229-v1:0";
 
-  // Modify the prompt to include additional details
-  const enhancedPrompt = `${prompt}\n\nHere is some additional information about the person you are contacting:
+  const enhancedPrompt = `${prompt}\n\nPlease generate the message directly without stating 'Here’s a draft' or any introductory text. The message should be personalized for the following individual:
   - Name: ${name}
   - Job Title: ${jobTitle}
-  - Company Name: ${companyName}`;
+  - Company Name: ${companyName}
+  - About: ${about}
+  
+  Make sure the response is ready to be sent without any additional phrases such as 'Here is the message.'`;
+  
 
   const payload = {
     anthropic_version: "bedrock-2023-05-31",
@@ -35,7 +38,6 @@ export const handler: Schema["generateHaiku"]["functionHandler"] = async (event,
 
   const response = await client.send(command);
 
-  // Decode and return the response(s)
   const decodedResponseBody = new TextDecoder().decode(response.body);
   const responseBody = JSON.parse(decodedResponseBody);
 

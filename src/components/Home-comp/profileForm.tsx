@@ -36,9 +36,9 @@ const formSchema = z.object({
   name: z.string().optional(),
   jobTitle: z.string().optional(),
   companyName: z.string().optional(),
-  // bio: z.string().max(500, {
-  //   message: "Bio must not be longer than 500 characters.",
-  // }).optional(),
+  about: z.string().max(1000, {
+    message: "About must not be longer than 1000 characters.",
+  }).optional(),
   industry: z.string().optional(),
   prompt: z.string().min(10, {
     message: "Prompt must be at least 10 characters.",
@@ -60,7 +60,8 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
       name: "",
       jobTitle: "",
       companyName: "",
-      // bio: "",
+      about: "",
+      industry: "",
       prompt: "",
     },
   });
@@ -96,9 +97,10 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
       const response = await client.queries.generateHaiku({ 
         name: data.name, 
         jobTitle: data.jobTitle, 
-        companyName: data.companyName, 
+        companyName: data.companyName,
+        about: data.about,
         prompt: data.prompt 
-    });
+      });
     
       if (response.errors && response.errors.length > 0) {
         console.error("GraphQL Error:", response.errors);
@@ -141,7 +143,7 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
         <FormField
           control={form.control}
           name="name"
@@ -149,7 +151,7 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="Your name" {...field} />
+                <Input placeholder="The receiver's name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -163,7 +165,7 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
             <FormItem>
               <FormLabel>Job Title</FormLabel>
               <FormControl>
-                <Input placeholder="Your job title" {...field} />
+                <Input placeholder="The receiver's job title" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -177,30 +179,29 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
             <FormItem>
               <FormLabel>Company Name</FormLabel>
               <FormControl>
-                <Input placeholder="Your company name" {...field} />
+                <Input placeholder="The receiver's company name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* <FormField
+        <FormField
           control={form.control}
-          name="bio"
+          name="about"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>LinkedIn Bio</FormLabel>
+              <FormLabel>About</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Tell us about yourself"
-                  className="resize-none"
+                  placeholder="The receiver's bio"
                   {...field}
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
-        /> */}
+        />
 
         <FormField
           control={form.control}
