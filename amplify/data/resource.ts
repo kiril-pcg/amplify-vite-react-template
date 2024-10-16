@@ -5,7 +5,8 @@ import {
   defineFunction,
 } from "@aws-amplify/backend";
 
-export const MODEL_ID = "anthropic.claude-3-5-sonnet-20240620-v1:0";
+// export const MODEL_ID = "anthropic.claude-3-5-sonnet-20240620-v1:0";
+export const MODEL_ID = "eu.meta.llama3-2-1b-instruct-v1:0";
 
 export const generateHaikuFunction = defineFunction({
   entry: "./generateHaiku.ts",
