@@ -14,7 +14,7 @@ backend.generateHaikuFunction.resources.lambda.addToRolePolicy(
     effect: Effect.ALLOW,
     actions: ["bedrock:InvokeModel"],
     resources: [
-      `arn:aws:bedrock:${process.env.AWS_REGION}:${process.env.ACCOUNT_ID}:model/${MODEL_ID}`
+      `arn:aws:bedrock:*::foundation-model/${MODEL_ID}`,
     ],
   })
 );
