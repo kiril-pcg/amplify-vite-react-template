@@ -10,8 +10,10 @@ export const handler: Schema["generateHaiku"]["functionHandler"] = async (event,
   const { prompt, userData } = event.arguments;
   const modelId = process.env.MODEL_ID || "anthropic.claude-3-sonnet-20240229-v1:0";
 
+  const formatedData = JSON.stringify(userData, null, 2);
+  
   const enhancedPrompt = `${prompt}\n\nPlease generate the message directly without stating 'Here’s a draft' or any introductory text. The message should be personalized based on the following data:
-  ${userData}
+  ${formatedData}
   
   Make sure the response is ready to be sent without any additional phrases such as 'Here is the message.'`;
   
