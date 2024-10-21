@@ -33,12 +33,9 @@ import { client } from "../../utils/utils";
 import { Schema } from "../../../amplify/data/resource";
 
 const formSchema = z.object({
-  name: z.string().optional(),
-  jobTitle: z.string().optional(),
-  companyName: z.string().optional(),
-  about: z.string().max(1000, {
-    message: "About must not be longer than 1000 characters.",
-  }).optional(),
+  linkedinPublicId: z.string().min(1, {
+    message: "LinkedIn Public ID is required.",
+  }),
   industry: z.string().optional(),
   prompt: z.string().min(10, {
     message: "Prompt must be at least 10 characters.",
@@ -57,10 +54,7 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      jobTitle: "",
-      companyName: "",
-      about: "",
+      linkedinPublicId: "",
       industry: "",
       prompt: "",
     },
@@ -89,17 +83,37 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
     }
   }
 
+  async function getUser(linkedinPublicId: string) {
+    try {
+      const options = {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          'X-API-KEY': '6o94JX4S.o0f3nQazq/tbSDCbnpzaYV0+tfC7Nxtns5KqS9Onfvw='
+        }
+      };
+      
+      const response = await fetch(`https://api2.unipile.com:13212/api/v1/users/${linkedinPublicId}?linkedin_sections=%2A&account_id=2FwwXfeeRMy7bvc7-90fBQ`, options);
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Failed to get user profile:", error);
+      throw error;
+    }
+  }
+
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     console.log("data: ", data);
   
     try {
+      const userData = await getUser(data.linkedinPublicId);
+      console.log(userData);
       const response = await client.queries.generateHaiku({ 
-        name: data.name, 
-        jobTitle: data.jobTitle, 
-        companyName: data.companyName,
-        about: data.about,
-        prompt: data.prompt 
+        prompt: data.prompt,
+        userData: userData
       });
     
       if (response.errors && response.errors.length > 0) {
@@ -146,57 +160,12 @@ export function ProfileForm({ industries, onResponseAdded }: ProfileFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
         <FormField
           control={form.control}
-          name="name"
+          name="linkedinPublicId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>LinkedIn Public ID</FormLabel>
               <FormControl>
-                <Input placeholder="The receiver's name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="jobTitle"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Job Title</FormLabel>
-              <FormControl>
-                <Input placeholder="The receiver's job title" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="companyName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Company Name</FormLabel>
-              <FormControl>
-                <Input placeholder="The receiver's company name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="about"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>About</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="The receiver's bio"
-                  {...field}
-                />
+                <Input placeholder="Enter LinkedIn Public ID" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

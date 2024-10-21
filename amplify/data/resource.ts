@@ -31,10 +31,7 @@ const schema = a.schema({
     generateHaiku: a
     .query()
     .arguments({ 
-        name: a.string(), 
-        jobTitle: a.string(), 
-        companyName: a.string(),
-        about: a.string(),
+        userData: a.json(),
         prompt: a.string().required() 
     })
     .returns(a.string())

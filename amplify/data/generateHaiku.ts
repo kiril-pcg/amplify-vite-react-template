@@ -7,14 +7,11 @@ import {
 const client = new BedrockRuntimeClient({ region: "eu-central-1" });
 
 export const handler: Schema["generateHaiku"]["functionHandler"] = async (event, context) => {
-  const { prompt, name, jobTitle, companyName, about } = event.arguments;
+  const { prompt, userData } = event.arguments;
   const modelId = process.env.MODEL_ID || "anthropic.claude-3-sonnet-20240229-v1:0";
 
-  const enhancedPrompt = `${prompt}\n\nPlease generate the message directly without stating 'Here’s a draft' or any introductory text. The message should be personalized for the following individual:
-  - Name: ${name}
-  - Job Title: ${jobTitle}
-  - Company Name: ${companyName}
-  - About: ${about}
+  const enhancedPrompt = `${prompt}\n\nPlease generate the message directly without stating 'Here’s a draft' or any introductory text. The message should be personalized based on the following data:
+  ${userData}
   
   Make sure the response is ready to be sent without any additional phrases such as 'Here is the message.'`;
   
