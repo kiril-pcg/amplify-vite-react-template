@@ -28,6 +28,7 @@ const formSchema = z.object({
   accountId: z.string().min(1, "Account ID is required"),
   limit: z.number().min(1, "Limit must be at least 1"),
   firstName: z.string().optional(),
+  lastName: z.string().optional(),
   company: z.string().optional(),
   keywords: z.string().optional(),
 })
@@ -41,9 +42,10 @@ export default function SearchForm() {
     defaultValues: {
       api: "classic",
       apiKey: "tyg/PmZ4.xfMgHgrYx96iyQvwfqsSRRX0uvQQm9v4mf9P7cSzBHM=",
-      accountId: "RApEgJdpRkGGZUkuuZngeA",
-      limit: 10,
+      accountId: "FnqeOiPkSkmRKb3ZqmADow",
+      limit: 5,
       firstName: "",
+      lastName: "",
       company: "",
       keywords: "",
     },
@@ -65,6 +67,7 @@ export default function SearchForm() {
         category: 'people',
         advanced_keywords: {
           first_name: values.firstName,
+          last_name: values.lastName,
           company: values.company
         },
         keywords: values.keywords
@@ -165,6 +168,19 @@ export default function SearchForm() {
               <FormLabel>First Name</FormLabel>
               <FormControl>
                 <Input placeholder="Enter first name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="lastName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Last Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter last name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
