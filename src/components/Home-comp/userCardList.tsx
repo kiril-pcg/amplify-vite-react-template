@@ -98,7 +98,6 @@ export function UserCardList({ users }: UserCardListProps) {
     
     try {
       const messages = await Promise.all(selectedUsersList.map(async (user) => {
-        // Extract only the required fields from the user object
         const response = await client.queries.generateHaiku({ 
           prompt: data.prompt,
           first_name: user.first_name,
@@ -106,6 +105,7 @@ export function UserCardList({ users }: UserCardListProps) {
           headline: user.headline,
           location: user.location,
           summary: user.summary,
+          test: "test",
         });
       
         if (response.errors && response.errors.length > 0) {
