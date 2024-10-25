@@ -25,7 +25,7 @@ export function MessageGrid({ messages }: MessageGridProps) {
             </div>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[200px] w-full">
+            <ScrollArea className="h-[300px] w-full">
               <p className="text-sm">{item.message}</p>
             </ScrollArea>
           </CardContent>
