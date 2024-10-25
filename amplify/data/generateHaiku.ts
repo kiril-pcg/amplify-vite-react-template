@@ -12,10 +12,11 @@ export const handler: Schema["generateHaiku"]["functionHandler"] = async (event,
 
   const formatedData = JSON.stringify(userData, null, 2);
   
-  const enhancedPrompt = `${prompt}\n\nPlease generate the message directly without stating 'Here’s a draft' or any introductory text. The message should be personalized based on the following data:
-  ${formatedData}
+  const enhancedPrompt = "generate 5 haikus about dogs"
+  // `${prompt}\n\nPlease generate the message directly without stating 'Here’s a draft' or any introductory text. The message should be personalized based on the following data:
+  // ${formatedData}
   
-  Make sure the response is ready to be sent without any additional phrases such as 'Here is the message.'`;
+  // Make sure the response is ready to be sent without any additional phrases such as 'Here is the message.'`;
   
 
   const payload = {
