@@ -94,6 +94,7 @@ export function UserCardList({ users }: UserCardListProps) {
     setIsGenerating(true);
     setGeneratedMessages([]);
     const selectedUsersList = Array.from(selectedUsers).map(id => users.find(user => user.public_identifier === id));
+    console.log(selectedUsersList)
     
     try {
       const messages = await Promise.all(selectedUsersList.map(async (user) => {
