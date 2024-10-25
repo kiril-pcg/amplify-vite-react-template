@@ -31,8 +31,12 @@ const schema = a.schema({
     generateHaiku: a
     .query()
     .arguments({ 
-        userData: a.json(),
-        prompt: a.string().required() 
+      prompt: a.string().required(),
+      first_name: a.string(),
+      last_name: a.string(),
+      headline: a.string(),
+      location: a.string(),
+      summary: a.string(),
     })
     .returns(a.string())
     .authorization((allow) => [allow.publicApiKey()])
