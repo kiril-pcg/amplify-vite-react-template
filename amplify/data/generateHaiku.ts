@@ -14,7 +14,6 @@ export const handler: Schema["generateHaiku"]["functionHandler"] = async (event,
     headline = "No headline available",
     location = "Unknown location",
     summary = "No summary available",
-    test = "test"
   } = event.arguments;
 
   const modelId = process.env.MODEL_ID || "anthropic.claude-3-sonnet-20240229-v1:0";

@@ -94,7 +94,6 @@ export function UserCardList({ users }: UserCardListProps) {
     setIsGenerating(true);
     setGeneratedMessages([]);
     const selectedUsersList = Array.from(selectedUsers).map(id => users.find(user => user.public_identifier === id));
-    console.log(selectedUsersList)
     
     try {
       const messages = await Promise.all(selectedUsersList.map(async (user) => {
@@ -105,7 +104,6 @@ export function UserCardList({ users }: UserCardListProps) {
           headline: user.headline,
           location: user.location,
           summary: user.summary,
-          test: "test",
         });
       
         if (response.errors && response.errors.length > 0) {
@@ -133,7 +131,7 @@ export function UserCardList({ users }: UserCardListProps) {
     }
   };
   
-
+console.log(generatedMessages)
   return (
     <div className="space-y-8 w-full">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
