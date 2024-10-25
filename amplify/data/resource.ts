@@ -37,7 +37,7 @@ const schema = a.schema({
       headline: a.string(),
       location: a.string(),
       summary: a.string(),
-      test: a.string().required()
+      test: a.string()
     })
     .returns(a.string())
     .authorization((allow) => [allow.publicApiKey()])
