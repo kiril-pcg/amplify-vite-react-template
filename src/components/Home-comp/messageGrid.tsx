@@ -76,10 +76,10 @@ export function MessageGrid({ messages }: MessageGridProps) {
           headers: {
             accept: 'application/json',
             'content-type': 'application/json',
-            'X-API-KEY': 'tyg/PmZ4.xfMgHgrYx96iyQvwfqsSRRX0uvQQm9v4mf9P7cSzBHM='
+            'X-API-KEY': 'd7tAGhYW.OTGyJZjOiRTcLbQZYFbB0ownZ8JlclSEHg6D3/NczQM='
           },
           body: JSON.stringify({
-            account_id: 'FnqeOiPkSkmRKb3ZqmADow',
+            account_id: 'cYnJ_ym5TTSmz9L7tZqhuw',
             text: editableMessages[index],
             attendees_ids: message.user.provider_id,
             linkedin: {
@@ -89,7 +89,7 @@ export function MessageGrid({ messages }: MessageGridProps) {
           })
         };
 
-        const response = await fetch('https://api2.unipile.com:13212/api/v1/chats', options);
+        const response = await fetch('https://api9.unipile.com:13911/api/v1/chats', options);
         const data = await response.json();
         console.log(data);
       }

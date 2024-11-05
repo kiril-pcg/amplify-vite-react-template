@@ -41,8 +41,8 @@ export default function SearchForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       api: "classic",
-      apiKey: "tyg/PmZ4.xfMgHgrYx96iyQvwfqsSRRX0uvQQm9v4mf9P7cSzBHM=",
-      accountId: "FnqeOiPkSkmRKb3ZqmADow",
+      apiKey: "d7tAGhYW.OTGyJZjOiRTcLbQZYFbB0ownZ8JlclSEHg6D3/NczQM=",
+      accountId: "cYnJ_ym5TTSmz9L7tZqhuw",
       limit: 5,
       firstName: "",
       lastName: "",
@@ -75,12 +75,12 @@ export default function SearchForm() {
     };
 
     try {
-      const response = await fetch(`https://api2.unipile.com:13212/api/v1/linkedin/search?limit=${values.limit}&account_id=${values.accountId}`, options)
+      const response = await fetch(`https://api9.unipile.com:13911/api/v1/linkedin/search?limit=${values.limit}&account_id=${values.accountId}`, options)
       const data = await response.json()
       
       // Fetch user profiles for each search result
       const profiles = await Promise.all(data.items.map(async (item: any) => {
-        const userResponse = await fetch(`https://api2.unipile.com:13212/api/v1/users/${item.public_identifier}?linkedin_sections=%2A&account_id=${values.accountId}`, {
+        const userResponse = await fetch(`https://api9.unipile.com:13911/api/v1/users/${item.public_identifier}?linkedin_sections=%2A&account_id=${values.accountId}`, {
           method: 'GET',
           headers: {
             'X-API-KEY': values.apiKey,
