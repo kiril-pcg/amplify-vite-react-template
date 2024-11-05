@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -10,17 +10,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Loader2 } from "lucide-react"
-import { UserCardList } from "../Home-comp/userCardList"
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Loader2 } from "lucide-react";
+import { UserCardList } from "../Home-comp/userCardList";
 
 const formSchema = z.object({
   api: z.enum(["classic", "sales_navigator"]),
@@ -31,11 +31,11 @@ const formSchema = z.object({
   lastName: z.string().optional(),
   company: z.string().optional(),
   keywords: z.string().optional(),
-})
+});
 
 export default function SearchForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [userProfiles, setUserProfiles] = useState<any[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userProfiles, setUserProfiles] = useState<any[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,51 +49,83 @@ export default function SearchForm() {
       company: "",
       keywords: "",
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
-    setUserProfiles([])
+    setIsSubmitting(true);
+    setUserProfiles([]);
 
     const options = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        'X-API-KEY': values.apiKey
+        accept: "application/json",
+        "content-type": "application/json",
+        "X-API-KEY": values.apiKey,
       },
       body: JSON.stringify({
         api: values.api,
-        category: 'people',
+        category: "people",
         advanced_keywords: {
           first_name: values.firstName,
           last_name: values.lastName,
-          company: values.company
+          company: values.company,
         },
-        keywords: values.keywords
-      })
+        keywords: values.keywords,
+      }),
     };
 
     try {
-      const response = await fetch(`https://api9.unipile.com:13911/api/v1/linkedin/search?limit=${values.limit}&account_id=${values.accountId}`, options)
-      const data = await response.json()
-      
+      const response = await fetch(
+        `https://api9.unipile.com:13911/api/v1/linkedin/search?limit=${values.limit}&account_id=${values.accountId}`,
+        options
+      );
+      const data = await response.json();
+
+      if (!data.items || data.items.length === 0) {
+        console.warn("No items found in the search response.");
+        setUserProfiles([]);
+        return;
+      }
+
       // Fetch user profiles for each search result
-      const profiles = await Promise.all(data.items.map(async (item: any) => {
-        const userResponse = await fetch(`https://api9.unipile.com:13911/api/v1/users/${item.public_identifier}?linkedin_sections=%2A&account_id=${values.accountId}`, {
-          method: 'GET',
-          headers: {
-            'X-API-KEY': values.apiKey,
-            'Accept': 'application/json'
+      const profiles = await Promise.all(
+        data.items.map(async (item: any) => {
+          try {
+            const userResponse = await fetch(
+              `https://api9.unipile.com:13911/api/v1/users/${item.public_identifier}?linkedin_sections=%2A&account_id=${values.accountId}`,
+              {
+                method: "GET",
+                headers: {
+                  "X-API-KEY": values.apiKey,
+                  Accept: "application/json",
+                },
+              }
+            );
+
+            if (!userResponse.ok) {
+              console.warn(
+                `Failed to fetch profile for ${item.public_identifier}`
+              );
+              return null; // Handle as you prefer
+            }
+
+            return userResponse.json();
+          } catch (error) {
+            console.error(
+              `Error fetching profile for ${item.public_identifier}`,
+              error
+            );
+            return null; // Return a placeholder or null
           }
         })
-        return userResponse.json()
-      }))
-      setUserProfiles(profiles)
+      );
+
+      // Filter out null profiles to avoid undefined items
+      setUserProfiles(profiles.filter((profile) => profile !== null));
     } catch (error) {
-      console.error(error)
+      console.error("Error during search or profile fetching", error);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
@@ -114,7 +146,9 @@ export default function SearchForm() {
                 </FormControl>
                 <SelectContent>
                   <SelectItem value="classic">Classic</SelectItem>
-                  <SelectItem value="sales_navigator">Sales Navigator</SelectItem>
+                  <SelectItem value="sales_navigator">
+                    Sales Navigator
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -154,7 +188,12 @@ export default function SearchForm() {
             <FormItem>
               <FormLabel>Limit</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="Enter limit" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                <Input
+                  type="number"
+                  placeholder="Enter limit"
+                  {...field}
+                  onChange={(e) => field.onChange(parseInt(e.target.value))}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -223,13 +262,13 @@ export default function SearchForm() {
           )}
         </Button>
         <div className="mt-12">
-        {userProfiles.length > 0 && (
-        <div className="mt-8">
-          <UserCardList users={userProfiles} />
+          {userProfiles.length > 0 && (
+            <div className="mt-8">
+              <UserCardList users={userProfiles} />
+            </div>
+          )}
         </div>
-      )}
-      </div>
       </form>
     </Form>
-  )
+  );
 }
