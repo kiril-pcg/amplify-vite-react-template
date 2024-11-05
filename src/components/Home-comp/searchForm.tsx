@@ -26,6 +26,7 @@ const formSchema = z.object({
   api: z.enum(["classic", "sales_navigator"]),
   apiKey: z.string().min(1, "API Key is required"),
   accountId: z.string().min(1, "Account ID is required"),
+  apiType: z.string().min(1, "API Type is required"),
   limit: z.number().min(1, "Limit must be at least 1"),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
@@ -43,6 +44,7 @@ export default function SearchForm() {
       api: "classic",
       apiKey: "d7tAGhYW.OTGyJZjOiRTcLbQZYFbB0ownZ8JlclSEHg6D3/NczQM=",
       accountId: "cYnJ_ym5TTSmz9L7tZqhuw",
+      apiType: "api9.unipile.com:13911",
       limit: 5,
       firstName: "",
       lastName: "",
@@ -76,7 +78,7 @@ export default function SearchForm() {
 
     try {
       const response = await fetch(
-        `https://api9.unipile.com:13911/api/v1/linkedin/search?limit=${values.limit}&account_id=${values.accountId}`,
+        `https://${values.apiType}/api/v1/linkedin/search?limit=${values.limit}&account_id=${values.accountId}`,
         options
       );
       const data = await response.json();
@@ -92,7 +94,7 @@ export default function SearchForm() {
         data.items.map(async (item: any) => {
           try {
             const userResponse = await fetch(
-              `https://api9.unipile.com:13911/api/v1/users/${item.public_identifier}?linkedin_sections=%2A&account_id=${values.accountId}`,
+              `https://${values.apiType}/api/v1/users/${item.public_identifier}?linkedin_sections=%2A&account_id=${values.accountId}`,
               {
                 method: "GET",
                 headers: {
@@ -183,6 +185,19 @@ export default function SearchForm() {
         />
         <FormField
           control={form.control}
+          name="apiType"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>API Type</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter API Type" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="limit"
           render={({ field }) => (
             <FormItem>
@@ -264,7 +279,12 @@ export default function SearchForm() {
         <div className="mt-12">
           {userProfiles.length > 0 && (
             <div className="mt-8">
-              <UserCardList users={userProfiles} />
+              <UserCardList 
+                users={userProfiles} 
+                apiType={form.getValues().apiType}
+                apiKey={form.getValues().apiKey}
+                accountId={form.getValues().accountId}
+              />
             </div>
           )}
         </div>
