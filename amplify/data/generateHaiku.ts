@@ -16,14 +16,16 @@ export const handler: Schema["generateHaiku"]["functionHandler"] = async (event,
     summary = "No summary available",
   } = event.arguments;
 
-  const modelId = process.env.MODEL_ID || "anthropic.claude-3-sonnet-20240229-v1:0";
+  const primaryModelId = process.env.MODEL_ID || "anthropic.claude-3-5-sonnet-20240620-v1:0";
+  const fallbackModelId = "anthropic.claude-3-sonnet-20240229-v1:0";
+  const maxRetries = 3;
 
   // Construct a user description from the selected fields
   const userDescription = `
-    His name is ${first_name} ${last_name}.
-    He is located in ${location}.
-    His professional headline is: "${headline}".
-    Here is a brief summary of him: "${summary}".
+    User name is ${first_name} ${last_name}.
+    Users located in ${location}.
+    Users professional headline is: "${headline}".
+    Here is a brief summary of the user: "${summary}".
   `.trim();
 
   // Build the enhanced prompt
@@ -40,23 +42,35 @@ export const handler: Schema["generateHaiku"]["functionHandler"] = async (event,
     ],
   };
 
-  const command = new InvokeModelCommand({
-    contentType: "application/json",
-    body: JSON.stringify(payload),
-    modelId,
-  });
+  const invokeModel = async (modelId: string, attempt: number = 1): Promise<string> => {
+    const command = new InvokeModelCommand({
+      contentType: "application/json",
+      body: JSON.stringify(payload),
+      modelId,
+    });
 
-  try {
-    const response = await client.send(command);
-    const decodedResponseBody = new TextDecoder().decode(response.body);
-    const responseBody = JSON.parse(decodedResponseBody);
+    try {
+      const response = await client.send(command);
+      const decodedResponseBody = new TextDecoder().decode(response.body);
+      const responseBody = JSON.parse(decodedResponseBody);
 
-    console.log("Generated message:", responseBody.content[0].text);
+      console.log("Generated message:", responseBody.content[0].text);
+      return responseBody.content[0].text;
+    } catch (error) {
+      if (attempt < maxRetries) {
+        const waitTime = Math.pow(2, attempt) * 1000; // Exponential backoff
+        console.warn(`Attempt ${attempt} failed, retrying in ${waitTime} ms...`);
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+        return invokeModel(modelId, attempt + 1);
+      } else if (modelId === primaryModelId) {
+        console.warn(`Switching to fallback model: ${fallbackModelId}`);
+        return invokeModel(fallbackModelId);
+      } else {
+        console.error("Error invoking model:", error);
+        throw new Error("Model invocation failed. Please check the logs for more details.");
+      }
+    }
+  };
 
-    return responseBody.content[0].text;
-
-  } catch (error) {
-    console.error("Error invoking model:", error);
-    throw new Error("Model invocation failed. Please check the logs for more details.");
-  }
+  return invokeModel(primaryModelId);
 };
