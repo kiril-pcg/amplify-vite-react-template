@@ -110,10 +110,6 @@ export function UserCardList({ users, apiType, apiKey, accountId }: UserCardList
           summary: user.summary,
         });
       
-        if (response.errors && response.errors.length > 0) {
-          throw new Error(response.errors[0].message);
-        }
-      
         return { user, message: response.data };
       }));
   
