@@ -94,13 +94,13 @@ export function UserCardList({ users, apiType, apiKey, accountId }: UserCardList
   const handleGenerateMessage = async () => {
     const data = form.getValues(); 
     if (selectedUsers.size === 0 || watchPrompt.length < 20) return; 
-
+  
     setIsGenerating(true);
     setGeneratedMessages([]);
     const selectedUsersList = Array.from(selectedUsers).map(id => users.find(user => user.public_identifier === id));
     
     try {
-      const messages = await Promise.all(selectedUsersList.map(async (user) => {
+      const results = await Promise.allSettled(selectedUsersList.map(async (user) => {
         const response = await client.queries.generateHaiku({ 
           prompt: data.prompt,
           first_name: user.first_name,
@@ -111,19 +111,39 @@ export function UserCardList({ users, apiType, apiKey, accountId }: UserCardList
         });
       
         if (response.errors && response.errors.length > 0) {
-          console.error(response.errors)
           throw new Error(response.errors[0].message);
         }
       
         return { user, message: response.data };
       }));
-
-      setGeneratedMessages(messages);
-      toast({
-        title: "Messages generated successfully",
-        description: `Generated ${messages.length} messages.`,
-        variant: "success",
-      });
+  
+      // Filter successful results and handle errors
+      const successfulMessages = results
+      .filter((result): result is PromiseFulfilledResult<{ user: any; message: string | null; }> => result.status === "fulfilled")
+      .map(result => result.value);
+  
+      const errors = results
+        .filter((result): result is PromiseRejectedResult => result.status === "rejected")
+        .map(result => result.reason);
+  
+      setGeneratedMessages(successfulMessages);
+  
+      if (successfulMessages.length > 0) {
+        toast({
+          title: "Messages generated successfully",
+          description: `Generated ${successfulMessages.length} messages.`,
+          variant: "success",
+        });
+      }
+  
+      if (errors.length > 0) {
+        console.error("Some messages failed to generate:", errors);
+        toast({
+          title: "Some errors occurred",
+          description: `${errors.length} messages failed to generate. Check logs for details.`,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Error generating messages:", error);
       toast({
@@ -135,6 +155,8 @@ export function UserCardList({ users, apiType, apiKey, accountId }: UserCardList
       setIsGenerating(false);
     }
   };
+  
+  
 
   return (
     <>
