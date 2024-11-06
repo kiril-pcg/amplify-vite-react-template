@@ -15,6 +15,8 @@ backend.generateHaikuFunction.resources.lambda.addToRolePolicy(
     actions: ["bedrock:InvokeModel"],
     resources: [
       `arn:aws:bedrock:*::foundation-model/${MODEL_ID}`,
+      `arn:aws:bedrock:*::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0`,
     ],
   })
 );
+
