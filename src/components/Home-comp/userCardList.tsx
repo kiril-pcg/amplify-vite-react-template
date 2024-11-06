@@ -111,6 +111,7 @@ export function UserCardList({ users, apiType, apiKey, accountId }: UserCardList
         });
       
         if (response.errors && response.errors.length > 0) {
+          console.error(response.errors)
           throw new Error(response.errors[0].message);
         }
       
