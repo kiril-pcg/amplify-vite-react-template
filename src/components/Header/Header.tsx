@@ -22,6 +22,12 @@ export default function Header({ signOut }: HeaderProps) {
           >
             Industries
           </Link>
+          <Link
+            className={buttonVariants({ variant: "ghost" })}
+            to={"/apiconfig"}
+          >
+            API Config
+          </Link>
         </div>
         <div className="right-side">
           <Button variant="ghost" onClick={signOut}>

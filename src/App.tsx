@@ -5,6 +5,7 @@ import Home from "./pages/Home/Home";
 import Industries from "./pages/Industries/Industries";
 import Header from "./components/Header/Header";
 import { Toaster } from "./components/ui/toaster";
+import {APIConfig} from "./components/APIConfig"
 import "./App.css";
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/industries" element={<Industries />} />
+            <Route path="apiconfig" element={<APIConfig />} />
           </Routes>
         </Router>
       )}

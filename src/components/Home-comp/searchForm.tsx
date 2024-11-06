@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -12,13 +12,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Loader2, Check, ChevronsUpDown, X } from "lucide-react";
 import { UserCardList } from "../Home-comp/userCardList";
@@ -53,27 +46,27 @@ const locationOptions = [
 ];
 
 const formSchema = z.object({
-  api: z.enum(["classic", "sales_navigator"]),
-  apiKey: z.string().min(1, "API Key is required"),
-  accountId: z.string().min(1, "Account ID is required"),
-  apiType: z.string().min(1, "API Type is required"),
   limit: z.number().min(1, "Limit must be at least 1"),
   locations: z.array(z.string()),
   keywords: z.string().optional(),
 });
 
-export default function SearchForm() {
+export function SearchForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userProfiles, setUserProfiles] = useState<any[]>([]);
   const { toast } = useToast();
+  const [apiConfig, setApiConfig] = useState<{apiKey: string, accountId: string, apiType: string} | null>(null);
+
+  useEffect(() => {
+    const savedConfig = localStorage.getItem('apiConfig');
+    if (savedConfig) {
+      setApiConfig(JSON.parse(savedConfig));
+    }
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      api: "classic",
-      apiKey: "D0fx6LYK.2lZOkSSBR8tSIhq7DE+Yvn2X5JlPRLRVf5DSC81ufog=",
-      accountId: "fSK7SIWrQU6RFktox0vV6A",
-      apiType: "api9.unipile.com:13911",
       limit: 5,
       locations: [],
       keywords: "",
@@ -81,6 +74,15 @@ export default function SearchForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!apiConfig) {
+      toast({
+        title: "API Configuration Missing",
+        description: "Please set up your API configuration first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     setUserProfiles([]);
 
@@ -89,10 +91,10 @@ export default function SearchForm() {
       headers: {
         accept: "application/json",
         "content-type": "application/json",
-        "X-API-KEY": values.apiKey,
+        "X-API-KEY": apiConfig.apiKey,
       },
       body: JSON.stringify({
-        api: values.api,
+        api: "classic",
         category: "people",
         advanced_keywords: {},
         keywords: values.keywords,
@@ -102,10 +104,21 @@ export default function SearchForm() {
 
     try {
       const response = await fetch(
-        `https://${values.apiType}/api/v1/linkedin/search?limit=${values.limit}&account_id=${values.accountId}`,
+        `https://${apiConfig.apiType}/api/v1/linkedin/search?limit=${values.limit}&account_id=${apiConfig.accountId}`,
         options
       );
       const data = await response.json();
+
+      if (!response.ok) { 
+        console.error("API Error:", response);
+    
+        toast({
+          title: `Error ${response.status}`,
+          description: response.statusText,
+          variant: "destructive",
+        });
+        return;
+      }
 
       if (!data.items || data.items.length === 0) {
         console.warn("No items found in the search response.");
@@ -121,11 +134,11 @@ export default function SearchForm() {
         data.items.map(async (item: any) => {
           try {
             const userResponse = await fetch(
-              `https://${values.apiType}/api/v1/users/${item.public_identifier}?linkedin_sections=%2A&account_id=${values.accountId}`,
+              `https://${apiConfig.apiType}/api/v1/users/${item.public_identifier}?linkedin_sections=%2A&account_id=${apiConfig.accountId}`,
               {
                 method: "GET",
                 headers: {
-                  "X-API-KEY": values.apiKey,
+                  "X-API-KEY": apiConfig.apiKey,
                   Accept: "application/json",
                 },
               }
@@ -135,7 +148,7 @@ export default function SearchForm() {
               console.warn(
                 `Failed to fetch profile for ${item.public_identifier}`
               );
-              return null; // Handle as you prefer
+              return null;
             }
 
             return userResponse.json();
@@ -144,15 +157,19 @@ export default function SearchForm() {
               `Error fetching profile for ${item.public_identifier}`,
               error
             );
-            return null; // Return a placeholder or null
+            return null;
           }
         })
       );
 
-      // Filter out null profiles to avoid undefined items
       setUserProfiles(profiles.filter((profile) => profile !== null));
     } catch (error) {
       console.error("Error during search or profile fetching", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while fetching user profiles.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -160,69 +177,7 @@ export default function SearchForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-        <FormField
-          control={form.control}
-          name="api"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>API</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select API" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="classic">Classic</SelectItem>
-                  <SelectItem value="sales_navigator">
-                    Sales Navigator
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="apiKey"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>API Key</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter API Key" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="accountId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Account ID</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter Account ID" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="apiType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>API Type</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter API Type" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="limit"
@@ -278,12 +233,8 @@ export default function SearchForm() {
                             value={location.label}
                             key={location.value}
                             onSelect={() => {
-                              const updatedLocations = field.value.includes(
-                                location.value
-                              )
-                                ? field.value.filter(
-                                    (l) => l !== location.value
-                                  )
+                              const updatedLocations = field.value.includes(location.value)
+                                ? field.value.filter((l) => l !== location.value)
                                 : [...field.value, location.value];
                               form.setValue("locations", updatedLocations);
                             }}
@@ -306,9 +257,7 @@ export default function SearchForm() {
               </Popover>
               <div className="flex flex-wrap gap-2 mt-2">
                 {field.value.map((locationValue) => {
-                  const location = locationOptions.find(
-                    (l) => l.value === locationValue
-                  );
+                  const location = locationOptions.find((l) => l.value === locationValue);
                   return (
                     <Badge key={locationValue} variant="secondary">
                       {location?.label}
@@ -317,9 +266,7 @@ export default function SearchForm() {
                         size="sm"
                         className="ml-1 h-auto p-0"
                         onClick={() => {
-                          const updatedLocations = field.value.filter(
-                            (l) => l !== locationValue
-                          );
+                          const updatedLocations = field.value.filter((l) => l !== locationValue);
                           form.setValue("locations", updatedLocations);
                         }}
                       >
@@ -346,7 +293,7 @@ export default function SearchForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button type="submit" className="w-full" disabled={isSubmitting || !apiConfig}>
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -361,9 +308,9 @@ export default function SearchForm() {
             <div className="mt-8">
               <UserCardList
                 users={userProfiles}
-                apiType={form.getValues().apiType}
-                apiKey={form.getValues().apiKey}
-                accountId={form.getValues().accountId}
+                apiType={apiConfig?.apiType || ""}
+                apiKey={apiConfig?.apiKey || ""}
+                accountId={apiConfig?.accountId || ""}
               />
             </div>
           )}
