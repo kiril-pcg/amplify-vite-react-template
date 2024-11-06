@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   Form,
   FormControl,
@@ -19,8 +20,37 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check, ChevronsUpDown, X } from "lucide-react";
 import { UserCardList } from "../Home-comp/userCardList";
+import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
+
+const locationOptions = [
+  { label: "United States", value: "103644278" },
+  { label: "California, United States", value: "102095887" },
+  { label: "Texas, United States", value: "102748797" },
+  { label: "New York, United States", value: "105080838" },
+  { label: "Florida, United States", value: "101318387" },
+  { label: "Los Angeles County, California, United States", value: "103104382" },
+  { label: "New York, New York, United States", value: "102571732" },
+  { label: "Illinois, United States", value: "101949407" },
+  { label: "Pennsylvania, United States", value: "102986501" },
+  { label: "Georgia, United States", value: "103950076" },
+  { label: "Ohio, United States", value: "106981407" }
+];
 
 const formSchema = z.object({
   api: z.enum(["classic", "sales_navigator"]),
@@ -28,27 +58,24 @@ const formSchema = z.object({
   accountId: z.string().min(1, "Account ID is required"),
   apiType: z.string().min(1, "API Type is required"),
   limit: z.number().min(1, "Limit must be at least 1"),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  company: z.string().optional(),
+  locations: z.array(z.string()),
   keywords: z.string().optional(),
 });
 
 export default function SearchForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userProfiles, setUserProfiles] = useState<any[]>([]);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       api: "classic",
-      apiKey: "d7tAGhYW.OTGyJZjOiRTcLbQZYFbB0ownZ8JlclSEHg6D3/NczQM=",
-      accountId: "cYnJ_ym5TTSmz9L7tZqhuw",
+      apiKey: "D0fx6LYK.2lZOkSSBR8tSIhq7DE+Yvn2X5JlPRLRVf5DSC81ufog=",
+      accountId: "fSK7SIWrQU6RFktox0vV6A",
       apiType: "api9.unipile.com:13911",
       limit: 5,
-      firstName: "",
-      lastName: "",
-      company: "",
+      locations: [],
       keywords: "",
     },
   });
@@ -67,12 +94,9 @@ export default function SearchForm() {
       body: JSON.stringify({
         api: values.api,
         category: "people",
-        advanced_keywords: {
-          first_name: values.firstName,
-          last_name: values.lastName,
-          company: values.company,
-        },
+        advanced_keywords: {},
         keywords: values.keywords,
+        location: values.locations 
       }),
     };
 
@@ -85,6 +109,9 @@ export default function SearchForm() {
 
       if (!data.items || data.items.length === 0) {
         console.warn("No items found in the search response.");
+        toast({
+          title: "No users found",
+        });
         setUserProfiles([]);
         return;
       }
@@ -216,39 +243,92 @@ export default function SearchForm() {
         />
         <FormField
           control={form.control}
-          name="firstName"
+          name="locations"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>First Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter first name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="lastName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Last Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter last name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="company"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Company</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter company" {...field} />
-              </FormControl>
+            <FormItem className="flex flex-col">
+              <FormLabel>Locations</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "w-full justify-between",
+                        !field.value.length && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value.length > 0
+                        ? `${field.value.length} location${
+                            field.value.length > 1 ? "s" : ""
+                          } selected`
+                        : "Select locations"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput placeholder="Search locations..." />
+                    <CommandList>
+                      <CommandEmpty>No location found.</CommandEmpty>
+                      <CommandGroup>
+                        {locationOptions.map((location) => (
+                          <CommandItem
+                            value={location.label}
+                            key={location.value}
+                            onSelect={() => {
+                              const updatedLocations = field.value.includes(
+                                location.value
+                              )
+                                ? field.value.filter(
+                                    (l) => l !== location.value
+                                  )
+                                : [...field.value, location.value];
+                              form.setValue("locations", updatedLocations);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                field.value.includes(location.value)
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            {location.label}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {field.value.map((locationValue) => {
+                  const location = locationOptions.find(
+                    (l) => l.value === locationValue
+                  );
+                  return (
+                    <Badge key={locationValue} variant="secondary">
+                      {location?.label}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-1 h-auto p-0"
+                        onClick={() => {
+                          const updatedLocations = field.value.filter(
+                            (l) => l !== locationValue
+                          );
+                          form.setValue("locations", updatedLocations);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  );
+                })}
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -279,8 +359,8 @@ export default function SearchForm() {
         <div className="mt-12">
           {userProfiles.length > 0 && (
             <div className="mt-8">
-              <UserCardList 
-                users={userProfiles} 
+              <UserCardList
+                users={userProfiles}
                 apiType={form.getValues().apiType}
                 apiKey={form.getValues().apiKey}
                 accountId={form.getValues().accountId}
