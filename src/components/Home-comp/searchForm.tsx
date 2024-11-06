@@ -50,7 +50,7 @@ const locationOptions = [
 
 const formSchema = z.object({
   limit: z.number().min(1, "Limit must be at least 1"),
-  locations: z.array(z.string()),
+  locations: z.array(z.string()).min(1, "Add at least one location!"),
   keywords: z.string().optional(),
 });
 
