@@ -42,7 +42,10 @@ const locationOptions = [
   { label: "Illinois, United States", value: "101949407" },
   { label: "Pennsylvania, United States", value: "102986501" },
   { label: "Georgia, United States", value: "103950076" },
-  { label: "Ohio, United States", value: "106981407" }
+  { label: "Ohio, United States", value: "106981407" },
+  { label: "Bulgaria", value: "105333783" },
+  { label: "Sofia City, Bulgaria", value: "102908739" },
+  { label: "Macedonia", value: "103420483" },
 ];
 
 const formSchema = z.object({
