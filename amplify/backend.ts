@@ -20,11 +20,14 @@ backend.generateHaikuFunction.resources.lambda.addToRolePolicy(
   })
 );
 
-const lambdaRole = backend.generateHaikuFunction.resources.lambda.role;
-if (lambdaRole) {
-  lambdaRole.addManagedPolicy(
-    ManagedPolicy.fromAwsManagedPolicyName("service-role/AWSLambdaBasicExecutionRole")
-  );
-} else {
-  console.error("Lambda role is undefined. Ensure the Lambda resource is correctly configured.");
-}
+backend.generateHaikuFunction.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ],
+    resources: ["*"],
+  })
+);
