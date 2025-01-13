@@ -1,7 +1,7 @@
 import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data, generateHaikuFunction, MODEL_ID } from './data/resource';
-import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam"
+import { Effect, PolicyStatement, ManagedPolicy } from "aws-cdk-lib/aws-iam"
 
 export const backend = defineBackend({
   auth,
@@ -20,3 +20,11 @@ backend.generateHaikuFunction.resources.lambda.addToRolePolicy(
   })
 );
 
+const lambdaRole = backend.generateHaikuFunction.resources.lambda.role;
+if (lambdaRole) {
+  lambdaRole.addManagedPolicy(
+    ManagedPolicy.fromAwsManagedPolicyName("service-role/AWSLambdaBasicExecutionRole")
+  );
+} else {
+  console.error("Lambda role is undefined. Ensure the Lambda resource is correctly configured.");
+}
