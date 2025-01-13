@@ -28,9 +28,12 @@ export const handler: Schema["generateHaiku"]["functionHandler"] = async (event,
     Here is a brief summary of the user: "${summary}".
   `.trim();
 
-  // Build the enhanced prompt
+  console.log("Prompt: ", prompt);
+  
   const enhancedPrompt = `${prompt}\n\nPlease generate a message directly, without introductory phrases. The message should be personalized based on the following details:\n${userDescription}\n\nEnsure the message is complete and can be sent as-is. Do not add Subject.`;
 
+  console.log("Enchanced Prompt: ", enhancedPrompt);
+  
   const payload = {
     anthropic_version: "bedrock-2023-05-31",
     max_tokens: 1000,
