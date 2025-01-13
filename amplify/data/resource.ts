@@ -22,12 +22,12 @@ const schema = a.schema({
       industryName: a.string(),
       prompt: a.string(),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization((allow) => [allow.authenticated()]),
   Responses: a
     .model({
       response: a.string(),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization((allow) => [allow.authenticated()]),
     generateHaiku: a
     .query()
     .arguments({ 
@@ -39,7 +39,7 @@ const schema = a.schema({
       summary: a.string(),
     })
     .returns(a.string())
-    .authorization((allow) => [allow.publicApiKey()])
+    .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(generateHaikuFunction)),
 });
 
